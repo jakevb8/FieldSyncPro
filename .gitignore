@@ -1,0 +1,24 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Android
+app/build/
+build/
+
+# Kotlin
+*.class
+
+# Gradle wrapper (keep the jar and properties, ignore the bin zip cache)
+gradle/wrapper/gradle-wrapper.jar
+
+# Test results
+app/build/reports/
+app/build/test-results/
