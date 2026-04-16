@@ -19,13 +19,12 @@ class AuthViewModelTest {
     @MockK lateinit var authRepository: AuthRepository
 
     private val testDispatcher = UnconfinedTestDispatcher()
-
     private val userFlow = MutableStateFlow<AuthUser?>(null)
 
     private val sampleUser = AuthUser(
         uid         = "uid-123",
         email       = "test@example.com",
-        displayName = null,
+        displayName = "Test User",
         photoUrl    = null,
     )
 
@@ -47,8 +46,7 @@ class AuthViewModelTest {
 
     @Test
     fun `currentUser is null initially`() {
-        val vm = createViewModel()
-        assertNull(vm.currentUser.value)
+        assertNull(createViewModel().currentUser.value)
     }
 
     @Test
@@ -58,67 +56,54 @@ class AuthViewModelTest {
         assertEquals(sampleUser, vm.currentUser.value)
     }
 
-    // ── signIn ────────────────────────────────────────────────────────────────
+    // ── signInWithGoogle ──────────────────────────────────────────────────────
 
     @Test
-    fun `signIn emits NavigateToTaskList on success`() = runTest {
-        coEvery { authRepository.signInWithEmail(any(), any()) } returns sampleUser
+    fun `signInWithGoogle emits NavigateToTaskList on success`() = runTest {
+        coEvery { authRepository.signInWithGoogle(any()) } returns sampleUser
         val vm = createViewModel()
 
         vm.effects.test {
-            vm.signIn("test@example.com", "password")
+            vm.signInWithGoogle("valid-google-token")
             assertEquals(AuthEffect.NavigateToTaskList, awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `signIn sets errorMessage on failure`() = runTest {
+    fun `signInWithGoogle sets errorMessage on failure`() = runTest {
         coEvery {
-            authRepository.signInWithEmail(any(), any())
-        } throws RuntimeException("Invalid credentials")
+            authRepository.signInWithGoogle(any())
+        } throws RuntimeException("Invalid Google token")
         val vm = createViewModel()
 
-        vm.signIn("bad@example.com", "wrong")
+        vm.signInWithGoogle("bad-token")
 
         assertNotNull(vm.uiState.value.errorMessage)
-        assertTrue(vm.uiState.value.errorMessage!!.contains("Invalid credentials"))
+        assertTrue(vm.uiState.value.errorMessage!!.contains("Invalid Google token"))
     }
 
     @Test
-    fun `signIn sets isLoading to false after completion`() = runTest {
-        coEvery { authRepository.signInWithEmail(any(), any()) } returns sampleUser
+    fun `signInWithGoogle sets isLoading false after completion`() = runTest {
+        coEvery { authRepository.signInWithGoogle(any()) } returns sampleUser
         val vm = createViewModel()
 
-        vm.signIn("test@example.com", "password")
+        vm.signInWithGoogle("token")
 
         assertFalse(vm.uiState.value.isLoading)
     }
 
-    // ── createAccount ─────────────────────────────────────────────────────────
-
     @Test
-    fun `createAccount emits NavigateToTaskList on success`() = runTest {
-        coEvery { authRepository.createAccountWithEmail(any(), any()) } returns sampleUser
+    fun `signInWithGoogle clears previous error before attempt`() = runTest {
+        coEvery { authRepository.signInWithGoogle("bad") } throws RuntimeException("Error")
+        coEvery { authRepository.signInWithGoogle("good") } returns sampleUser
         val vm = createViewModel()
 
-        vm.effects.test {
-            vm.createAccount("new@example.com", "pass123")
-            assertEquals(AuthEffect.NavigateToTaskList, awaitItem())
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `createAccount sets errorMessage on failure`() = runTest {
-        coEvery {
-            authRepository.createAccountWithEmail(any(), any())
-        } throws RuntimeException("Email already in use")
-        val vm = createViewModel()
-
-        vm.createAccount("existing@example.com", "pass123")
-
+        vm.signInWithGoogle("bad")
         assertNotNull(vm.uiState.value.errorMessage)
+
+        vm.signInWithGoogle("good")
+        assertNull(vm.uiState.value.errorMessage)
     }
 
     // ── signOut ───────────────────────────────────────────────────────────────
@@ -137,11 +122,9 @@ class AuthViewModelTest {
 
     @Test
     fun `clearError removes errorMessage`() = runTest {
-        coEvery {
-            authRepository.signInWithEmail(any(), any())
-        } throws RuntimeException("Error")
+        coEvery { authRepository.signInWithGoogle(any()) } throws RuntimeException("Error")
         val vm = createViewModel()
-        vm.signIn("x@example.com", "y")
+        vm.signInWithGoogle("bad")
 
         assertNotNull(vm.uiState.value.errorMessage)
         vm.clearError()

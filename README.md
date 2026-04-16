@@ -173,7 +173,7 @@ Open the project in Android Studio and let Gradle sync.
 
 The app uses Firebase Authentication. The `google-services.json` file is already placed at `app/google-services.json` (linked to Firebase project `fieldsyncpro-platform`).
 
-> **Important:** Before signing in you must enable the **Email/Password** auth provider in the [Firebase Console](https://console.firebase.google.com/project/fieldsyncpro-platform/authentication/providers).
+> **Important:** Before signing in you must enable the **Google** sign-in provider in the [Firebase Console](https://console.firebase.google.com/project/fieldsyncpro-platform/authentication/providers), and add your debug SHA-1 fingerprint to the Android app in [Project Settings](https://console.firebase.google.com/project/fieldsyncpro-platform/settings/general). Then re-download `google-services.json`. Run `./gradlew signingReport` to get your SHA-1.
 
 ### Configure the API Base URL
 
@@ -216,8 +216,8 @@ buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3001/v1/\"")
 | `UseCaseTest` | 6 | MockK — delegates to repository |
 | `TaskListViewModelTest` | 12 | Turbine + MockK + UnconfinedTestDispatcher |
 | `TaskDetailViewModelTest` | 13 | Turbine + MockK + UnconfinedTestDispatcher |
-| `AuthRepositoryImplTest` | 7 | MockK — mocks FirebaseAuth, FirebaseUser, Tasks |
-| `AuthViewModelTest` | 9 | Turbine + MockK + UnconfinedTestDispatcher |
+| `AuthRepositoryImplTest` | 7 | MockK — mocks FirebaseAuth, GoogleAuthProvider, Tasks |
+| `AuthViewModelTest` | 7 | Turbine + MockK + UnconfinedTestDispatcher |
 | **Total** | **75** | **0 failures** |
 
 ---
@@ -242,6 +242,7 @@ buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3001/v1/\"")
 | Retrofit | 2.11.0 |
 | WorkManager | 2.9.0 |
 | Firebase BOM | 33.1.0 |
+| play-services-auth | 21.2.0 |
 | Turbine | 1.1.0 |
 | MockK | 1.13.11 |
 

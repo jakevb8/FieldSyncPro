@@ -110,6 +110,7 @@ dependencies {
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    implementation(libs.play.services.auth)
 
     // Debug
     debugImplementation(libs.androidx.ui.tooling)

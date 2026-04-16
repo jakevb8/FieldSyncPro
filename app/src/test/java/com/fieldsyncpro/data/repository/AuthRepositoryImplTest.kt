@@ -83,8 +83,7 @@ class AuthRepositoryImplTest {
     @Test
     fun `getIdToken returns null when no user`() = runTest {
         every { firebaseAuth.currentUser } returns null
-        val token = repository.getIdToken()
-        assertNull(token)
+        assertNull(repository.getIdToken())
     }
 
     @Test
@@ -94,45 +93,42 @@ class AuthRepositoryImplTest {
         every { firebaseAuth.currentUser } returns firebaseUser
         every { firebaseUser.getIdToken(false) } returns Tasks.forResult(mockResult)
 
-        val token = repository.getIdToken()
-        assertEquals("test-token-abc", token)
+        assertEquals("test-token-abc", repository.getIdToken())
     }
 
-    // ── signInWithEmail ───────────────────────────────────────────────────────
+    // ── signInWithGoogle ──────────────────────────────────────────────────────
 
     @Test
-    fun `signInWithEmail returns AuthUser on success`() = runTest {
+    fun `signInWithGoogle returns AuthUser on success`() = runTest {
         val authResult = mockk<AuthResult>()
         every { authResult.user } returns firebaseUser
-        every {
-            firebaseAuth.signInWithEmailAndPassword("test@example.com", "password")
-        } returns Tasks.forResult(authResult)
 
-        val result = repository.signInWithEmail("test@example.com", "password")
+        mockkStatic(GoogleAuthProvider::class)
+        val credential = mockk<AuthCredential>()
+        every { GoogleAuthProvider.getCredential("google-id-token", null) } returns credential
+        every { firebaseAuth.signInWithCredential(credential) } returns Tasks.forResult(authResult)
+
+        val result = repository.signInWithGoogle("google-id-token")
+
         assertEquals(sampleUser.uid, result.uid)
+        assertEquals(sampleUser.email, result.email)
+        unmockkStatic(GoogleAuthProvider::class)
     }
 
     @Test(expected = Exception::class)
-    fun `signInWithEmail throws on failure`() = runTest {
+    fun `signInWithGoogle throws on failure`() = runTest {
+        mockkStatic(GoogleAuthProvider::class)
+        val credential = mockk<AuthCredential>()
+        every { GoogleAuthProvider.getCredential(any(), null) } returns credential
         every {
-            firebaseAuth.signInWithEmailAndPassword(any(), any())
-        } returns Tasks.forException(Exception("Invalid credentials"))
+            firebaseAuth.signInWithCredential(credential)
+        } returns Tasks.forException(Exception("Invalid Google token"))
 
-        repository.signInWithEmail("bad@example.com", "wrong")
-    }
-
-    // ── createAccountWithEmail ────────────────────────────────────────────────
-
-    @Test
-    fun `createAccountWithEmail returns AuthUser on success`() = runTest {
-        val authResult = mockk<AuthResult>()
-        every { authResult.user } returns firebaseUser
-        every {
-            firebaseAuth.createUserWithEmailAndPassword("new@example.com", "pass123")
-        } returns Tasks.forResult(authResult)
-
-        val result = repository.createAccountWithEmail("new@example.com", "pass123")
-        assertEquals(sampleUser.uid, result.uid)
+        try {
+            repository.signInWithGoogle("bad-token")
+        } finally {
+            unmockkStatic(GoogleAuthProvider::class)
+        }
     }
 
     // ── signOut ───────────────────────────────────────────────────────────────

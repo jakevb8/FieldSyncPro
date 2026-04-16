@@ -11,15 +11,10 @@ interface AuthRepository {
     suspend fun getIdToken(): String?
 
     /**
-     * Sign in with email and password.
-     * @throws FirebaseAuthException on bad credentials.
+     * Sign in with a Google ID token obtained from the Google Sign-In SDK.
+     * @throws FirebaseAuthException if the credential is invalid.
      */
-    suspend fun signInWithEmail(email: String, password: String): AuthUser
-
-    /**
-     * Create a new account with email and password.
-     */
-    suspend fun createAccountWithEmail(email: String, password: String): AuthUser
+    suspend fun signInWithGoogle(idToken: String): AuthUser
 
     /** Sign out the current user. */
     suspend fun signOut()

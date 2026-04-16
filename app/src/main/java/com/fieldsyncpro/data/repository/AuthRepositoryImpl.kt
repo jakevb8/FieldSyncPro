@@ -4,6 +4,7 @@ import com.fieldsyncpro.domain.model.AuthUser
 import com.fieldsyncpro.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -27,16 +28,11 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun getIdToken(): String? =
         firebaseAuth.currentUser?.getIdToken(false)?.await()?.token
 
-    override suspend fun signInWithEmail(email: String, password: String): AuthUser {
-        val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+    override suspend fun signInWithGoogle(idToken: String): AuthUser {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        val result = firebaseAuth.signInWithCredential(credential).await()
         return result.user?.toAuthUser()
-            ?: error("Sign-in succeeded but user is null")
-    }
-
-    override suspend fun createAccountWithEmail(email: String, password: String): AuthUser {
-        val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-        return result.user?.toAuthUser()
-            ?: error("Account creation succeeded but user is null")
+            ?: error("Google sign-in succeeded but user is null")
     }
 
     override suspend fun signOut() {
@@ -44,9 +40,9 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     private fun FirebaseUser.toAuthUser() = AuthUser(
-        uid = uid,
-        email = email,
+        uid         = uid,
+        email       = email,
         displayName = displayName,
-        photoUrl = photoUrl?.toString(),
+        photoUrl    = photoUrl?.toString(),
     )
 }

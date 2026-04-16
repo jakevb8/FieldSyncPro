@@ -26,6 +26,7 @@ archCoreTesting = "2.2.0"
 roomTesting = "2.6.1"
 firebaseBom = "33.1.0"
 googleServices = "4.4.2"
+playServicesAuth = "21.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -64,7 +65,7 @@ workmanager = { group = "androidx.work", name = "work-runtime-ktx", version.ref 
 
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
-firebase-auth-ui = { group = "com.google.firebase", name = "firebase-ui-auth", version = "8.0.2" }
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }

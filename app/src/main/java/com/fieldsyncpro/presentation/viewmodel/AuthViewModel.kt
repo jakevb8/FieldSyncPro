@@ -32,20 +32,10 @@ class AuthViewModel @Inject constructor(
     private val _effects = MutableSharedFlow<AuthEffect>(extraBufferCapacity = 1)
     val effects: SharedFlow<AuthEffect> = _effects.asSharedFlow()
 
-    fun signIn(email: String, password: String) {
+    fun signInWithGoogle(idToken: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            runCatching { authRepository.signInWithEmail(email, password) }
-                .onSuccess { _effects.tryEmit(AuthEffect.NavigateToTaskList) }
-                .onFailure { e -> _uiState.update { it.copy(errorMessage = e.message) } }
-            _uiState.update { it.copy(isLoading = false) }
-        }
-    }
-
-    fun createAccount(email: String, password: String) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            runCatching { authRepository.createAccountWithEmail(email, password) }
+            runCatching { authRepository.signInWithGoogle(idToken) }
                 .onSuccess { _effects.tryEmit(AuthEffect.NavigateToTaskList) }
                 .onFailure { e -> _uiState.update { it.copy(errorMessage = e.message) } }
             _uiState.update { it.copy(isLoading = false) }

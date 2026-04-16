@@ -59,12 +59,12 @@ enum class TaskStatus { PENDING, SYNCING, COMPLETED, CONFLICT }
 ### 4.4 Navigation
 * Jetpack Navigation Compose with two top-level destinations: Task List and Task Detail/Create
 
-### 4.5 Authentication (Firebase Auth)
-* Email/password sign-in and account creation via Firebase Authentication
-* `AuthRepository` interface with `currentUser: Flow<AuthUser?>`, `signIn`, `createAccount`, `getIdToken`, `signOut`
-* `AuthRepositoryImpl` uses `FirebaseAuth` + `callbackFlow` to emit live auth state
+### 4.5 Authentication (Firebase + Google Sign-In)
+* Google Sign-In only — users tap "Continue with Google", the Google Sign-In SDK presents the account picker, and the resulting ID token is exchanged with Firebase Auth via `signInWithCredential(GoogleAuthProvider.getCredential(idToken, null))`
+* `AuthRepository` interface with `currentUser: Flow<AuthUser?>`, `signInWithGoogle(idToken)`, `getIdToken`, `signOut`
+* `AuthRepositoryImpl` uses `FirebaseAuth` + `callbackFlow` to emit live auth state, and `GoogleAuthProvider` + `signInWithCredential` for sign-in
 * `AuthViewModel` exposes `currentUser: StateFlow<AuthUser?>`, `uiState` (loading/error), and one-shot `AuthEffect.NavigateToTaskList`
-* `LoginScreen` — Compose screen with email/password fields, Sign In + Create Account buttons, inline error display
+* `LoginScreen` — Compose screen with a single "Continue with Google" button using `rememberLauncherForActivityResult` to launch the `GoogleSignInClient` intent
 * Nav graph uses `currentUser` state to gate all task routes: unauthenticated users are redirected to `login`, authenticated users are redirected away from it
 * `FieldSyncProApplication` observes auth state to schedule `TaskSyncWorker` only when signed in, and cancels it on sign-out
 * `NetworkModule` OkHttp interceptor attaches `Authorization: Bearer <token>` on every API request using `runBlocking { authRepository.getIdToken() }`
