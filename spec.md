@@ -59,6 +59,19 @@ enum class TaskStatus { PENDING, SYNCING, COMPLETED, CONFLICT }
 ### 4.4 Navigation
 * Jetpack Navigation Compose with two top-level destinations: Task List and Task Detail/Create
 
+### 4.5 Authentication (Firebase Auth)
+* Email/password sign-in and account creation via Firebase Authentication
+* `AuthRepository` interface with `currentUser: Flow<AuthUser?>`, `signIn`, `createAccount`, `getIdToken`, `signOut`
+* `AuthRepositoryImpl` uses `FirebaseAuth` + `callbackFlow` to emit live auth state
+* `AuthViewModel` exposes `currentUser: StateFlow<AuthUser?>`, `uiState` (loading/error), and one-shot `AuthEffect.NavigateToTaskList`
+* `LoginScreen` — Compose screen with email/password fields, Sign In + Create Account buttons, inline error display
+* Nav graph uses `currentUser` state to gate all task routes: unauthenticated users are redirected to `login`, authenticated users are redirected away from it
+* `FieldSyncProApplication` observes auth state to schedule `TaskSyncWorker` only when signed in, and cancels it on sign-out
+* `NetworkModule` OkHttp interceptor attaches `Authorization: Bearer <token>` on every API request using `runBlocking { authRepository.getIdToken() }`
+
+### 4.6 Hilt Modules (updated)
+* `AuthModule` — provides `FirebaseAuth` instance, binds `AuthRepositoryImpl` to `AuthRepository`
+
 ## 5. Architecture Decisions
 
 ### MVI Contract
@@ -78,8 +91,9 @@ di/            ← Hilt modules
 ### Dependency Injection
 Four Hilt modules in `di/`:
 * `DatabaseModule` — Room database + DAO bindings
-* `NetworkModule` — OkHttp + Retrofit + Kotlinx JSON
+* `NetworkModule` — OkHttp (with auth interceptor) + Retrofit + Kotlinx JSON
 * `RepositoryModule` — binds `TaskRepositoryImpl` to `TaskRepository`
+* `AuthModule` — provides `FirebaseAuth`, binds `AuthRepositoryImpl` to `AuthRepository`
 * `WorkManagerModule` — provides `WorkManager`
 
 ## 6. Testing Coverage
@@ -92,3 +106,5 @@ Four Hilt modules in `di/`:
 | Use cases | `UseCaseTest` | MockK repository |
 | TaskListViewModel | `TaskListViewModelTest` | Turbine + MockK + UnconfinedTestDispatcher |
 | TaskDetailViewModel | `TaskDetailViewModelTest` | Turbine + MockK + UnconfinedTestDispatcher |
+| AuthRepositoryImpl | `AuthRepositoryImplTest` | MockK (FirebaseAuth + FirebaseUser + Tasks) |
+| AuthViewModel | `AuthViewModelTest` | Turbine + MockK + UnconfinedTestDispatcher |

@@ -128,19 +128,20 @@ app/src/main/java/com/fieldsyncpro/
 │   ├── DatabaseModule.kt
 │   ├── NetworkModule.kt
 │   ├── RepositoryModule.kt
+│   ├── AuthModule.kt
 │   └── WorkManagerModule.kt
 ├── domain/
-│   ├── model/                   # FieldTask · TaskVibe · TaskStatus
-│   ├── repository/              # TaskRepository (interface)
+│   ├── model/                   # FieldTask · TaskVibe · TaskStatus · AuthUser
+│   ├── repository/              # TaskRepository · AuthRepository (interfaces)
 │   └── usecase/                 # GetAll · Create · Update · Delete · Sync
 ├── data/
 │   ├── local/                   # Room: FieldSyncDatabase · TaskDao · TaskEntity
 │   ├── remote/                  # Retrofit: TaskApiService · TaskDto
-│   └── repository/              # TaskRepositoryImpl · TaskMapper
+│   └── repository/              # TaskRepositoryImpl · AuthRepositoryImpl · TaskMapper
 ├── presentation/
-│   ├── viewmodel/               # TaskListViewModel · TaskDetailViewModel · contracts
+│   ├── viewmodel/               # TaskListViewModel · TaskDetailViewModel · AuthViewModel · contracts
 │   └── ui/
-│       ├── screen/              # TaskListScreen · TaskDetailScreen
+│       ├── screen/              # TaskListScreen · TaskDetailScreen · LoginScreen
 │       ├── component/           # TaskCard · VibeChip · TaskStatusChip
 │       └── theme/               # FieldSyncProTheme (Material 3)
 └── worker/
@@ -167,6 +168,12 @@ cd FieldSyncPro
 ```
 
 Open the project in Android Studio and let Gradle sync.
+
+### Configure Firebase
+
+The app uses Firebase Authentication. The `google-services.json` file is already placed at `app/google-services.json` (linked to Firebase project `fieldsyncpro-platform`).
+
+> **Important:** Before signing in you must enable the **Email/Password** auth provider in the [Firebase Console](https://console.firebase.google.com/project/fieldsyncpro-platform/authentication/providers).
 
 ### Configure the API Base URL
 
@@ -209,7 +216,9 @@ buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3001/v1/\"")
 | `UseCaseTest` | 6 | MockK — delegates to repository |
 | `TaskListViewModelTest` | 12 | Turbine + MockK + UnconfinedTestDispatcher |
 | `TaskDetailViewModelTest` | 13 | Turbine + MockK + UnconfinedTestDispatcher |
-| **Total** | **59** | **0 failures** |
+| `AuthRepositoryImplTest` | 7 | MockK — mocks FirebaseAuth, FirebaseUser, Tasks |
+| `AuthViewModelTest` | 9 | Turbine + MockK + UnconfinedTestDispatcher |
+| **Total** | **75** | **0 failures** |
 
 ---
 
@@ -232,6 +241,7 @@ buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3001/v1/\"")
 | Room | 2.6.1 |
 | Retrofit | 2.11.0 |
 | WorkManager | 2.9.0 |
+| Firebase BOM | 33.1.0 |
 | Turbine | 1.1.0 |
 | MockK | 1.13.11 |
 
