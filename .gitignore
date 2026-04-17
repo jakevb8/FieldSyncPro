@@ -16,9 +16,12 @@ build/
 # Kotlin
 *.class
 
-# Gradle wrapper (keep the jar and properties, ignore the bin zip cache)
-gradle/wrapper/gradle-wrapper.jar
+# Gradle wrapper cache only — the jar must be committed so CI can run
+.gradle/wrapper/dists/
 
 # Test results
 app/build/reports/
 app/build/test-results/
+
+# Firebase — never commit, stored as GitHub secret GOOGLE_SERVICES_JSON
+app/google-services.json
